@@ -933,9 +933,9 @@ function ask(upd, floating) {
       } catch (error) {
         console.error(error);
         const msg = String(error?.message || '');
-        const reply = /not configured|GROQ_API_KEY/i.test(msg)
-          ? 'AI backend configured nahi hai. Vercel Environment Variables me GROQ_API_KEY check karke redeploy karo.'
-          : `AI service se response nahi aa raha. ${msg || 'Vercel /api/chat deployment aur API configuration check karo.'}`;
+        const reply = /not configured|OPENAI_API_KEY/i.test(msg)
+          ? 'AI backend configured nahi hai. Vercel Environment Variables me OPENAI_API_KEY check karo aur redeploy karo.'
+          : `AI service se response nahi aa raha. ${msg || 'Vercel /api/chat deployment aur OpenAI configuration check karo.'}`;
         body.innerHTML = renderHistory() + `<div class="chat-msg ai"><div class="chat-bubble ai">${esc(reply)}</div></div>`;
       }
       $('#chat-status').textContent = '';
