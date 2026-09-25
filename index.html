@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GuruAgent — Dynamic Dashboard</title>
+<style>
+:root {
+  --bg: #F4EFE6;           /* Warm Rich Cream Background */
+  --card: #FAF8F5;         /* Crisp White Cream Cards */
+  --cream: #E7DFD3;        /* Soft Warm Accent Cream */
+  --sb-bg: #1C1917;        /* Dark Espresso Sidebar Background */
+  --sb-tx: #F5F5F4;        /* Light Cream Text for Sidebar */
+  --sb-hover: #292524;     /* Dark Hover State */
+  --tx: #26221F;           /* Deep Charcoal Text */
+  --mu: #78716C;           /* Warm Muted Text */
+  --bd: #DDD5C7;           /* Soft Warm Border */
+  --ac: #D97706;           /* Warm Gold Amber Accent */
+  --ac-dark: #B45309;      /* Dark Amber */
+  --ok: #2E7D32;           /* Soft Green Success */
+  --sh: 0 4px 16px rgba(40, 30, 20, 0.08);
+  --sh-hover: 0 12px 28px rgba(180, 83, 9, 0.18);
+  box-sizing: border-box;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; background: var(--bg); color: var(--tx); font: 15px/1.5 system-ui, -apple-system, sans-serif; }
+body { overflow-x: hidden; }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3 { margin: 0 0 8px; font-weight: 700; }
+p { margin: 8px 0; }
+.mu { color: var(--mu); }
+
+#app { display: flex; min-height: 100vh; }
+
+/* Dark Espresso Collapsible Sidebar */
+.sb {
+  width: 240px;
+  flex: none;
+  background: var(--sb-bg);
+  color: var(--sb-tx);
+  border-right: 1px solid rgba(255,255,255,0.08);
+  padding: 18px 12px;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  z-index: 10;
+}
+.sb.c { width: 72px; }
+.sb.c .lb { display: none; }
+.sb.c .nv { justify-content: center; padding-inline: 10px; }
+
+.logo {
+  font-weight: 800;
+  font-size: 19px;
+  padding: 8px 12px;
+  white-space: nowrap;
+  color: #FDE68A;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.2s ease;
+}
+.logo:hover { transform: scale(1.03); }
+
+/* Sidebar Items - Rich Hover */
+.nv {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 11px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #A8A29E;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nv:hover {
+  background: var(--sb-hover);
+  color: #FDE68A;
+  transform: translateX(4px);
+}
+.nv.on {
+  background: var(--ac);
+  color: #FFFFFF;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4);
+}
+.nv.on:hover {
+  background: var(--ac-dark);
+  transform: translateX(4px) scale(1.01);
+}
+.nv span:first-child { width: 22px; text-align: center; font-size: 17px; }
+
+/* Main Content Area */
+.mn { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* Header Bar */
+.hd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 28px;
+  background: #231F1D;
+  color: #FAF8F5;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.hd .btn.ghost { flex: none; }
+.top-title { display: flex; align-items: center; gap: 10px; min-width: 150px; }
+.top-title small { display: block; color: #A8A29E; font-weight: 500; font-size: 11px; }
+.top-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+
+.pg { padding: 28px; max-width: 1120px; margin: 0 auto; width: 100%; }
+
+/* Cards — FULL HOVER LIFT & GLOW EFFECT */
+.card {
+  background: var(--card);
+  border: 1px solid var(--bd);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: var(--sh);
+  margin-bottom: 20px;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--sh-hover);
+  border-color: var(--ac);
+}
+.card.k { cursor: pointer; }
+.section-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 9px 14px;
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  background: rgba(255,255,255,.7);
+  color: var(--tx);
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform .22s ease, background-color .22s ease, border-color .22s ease, box-shadow .22s ease;
+}
+.section-action:hover {
+  transform: translateY(-2px);
+  background: #FFF8EE;
+  border-color: var(--ac);
+  box-shadow: 0 6px 14px rgba(217,119,6,.16);
+}
+.section-action.amber {
+  background: var(--ac);
+  border-color: var(--ac);
+  color: #FFF;
+}
+.section-action.amber:hover { background: var(--ac-dark); color: #FFF; }
+
+.g2 { display: grid; grid-template-columns: 1.35fr 1fr; gap: 20px; }
+.g3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border-radius: 22px;
+  color: #FFF7ED;
+  background: radial-gradient(circle at 90% 10%, rgba(251,191,36,.25), transparent 34%), linear-gradient(135deg, #292524, #57534E);
+  box-shadow: 0 14px 30px rgba(41,37,36,.2);
+}
+.hero h1 { color: #FFF7ED; margin-bottom: 4px; }
+.hero p { color: #D6D3D1; margin: 0; }
+.hero .btn { background: #F59E0B; color: #1C1917; }
+.domain-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+.domain-tool { border: 1px solid var(--bd); border-radius: 16px; padding: 16px; background: var(--card); transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+.domain-tool:hover { transform: translateY(-4px); border-color: var(--ac); box-shadow: var(--sh-hover); }
+.domain-tool h3 { margin-bottom: 5px; font-size: 15px; }
+.domain-tool p { margin: 0; color: var(--mu); font-size: 13px; }
+.tool-row { display: flex; gap: 8px; margin-top: 12px; }
+.tool-row input { min-width: 0; width: 100%; border: 1px solid var(--bd); border-radius: 9px; padding: 8px; font: inherit; }
+.tool-row input:focus { outline: none; border-color: var(--ac); box-shadow: 0 0 0 3px rgba(217,119,6,.14); }
+.domain-tech { --ac: #2563EB; --ac-dark: #1D4ED8; --cream: #DBEAFE; }
+.domain-tech .hero { background: radial-gradient(circle at 90% 10%, rgba(96,165,250,.3), transparent 34%), linear-gradient(135deg, #172554, #1E3A8A); }
+.domain-accounting { --ac: #059669; --ac-dark: #047857; --cream: #D1FAE5; }
+.domain-accounting .hero { background: radial-gradient(circle at 90% 10%, rgba(52,211,153,.3), transparent 34%), linear-gradient(135deg, #064E3B, #065F46); }
+.domain-rural { --ac: #65A30D; --ac-dark: #4D7C0F; --cream: #ECFCCB; }
+.domain-rural .hero { background: radial-gradient(circle at 90% 10%, rgba(163,230,53,.3), transparent 34%), linear-gradient(135deg, #365314, #3F6212); }
+.metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+.metric { padding: 15px 16px; border: 1px solid var(--bd); border-radius: 16px; background: rgba(250,248,245,.75); }
+.metric strong { display: block; font-size: 24px; line-height: 1.1; }
+.metric span { color: var(--mu); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+@media(max-width: 780px) {
+  .g2 { grid-template-columns: 1fr; }
+  .pg { padding: 18px; }
+  .hd { padding: 12px 16px; }
+  .sb { position: fixed; left: 0; top: 0; transform: translateX(0); box-shadow: 12px 0 30px rgba(0,0,0,.2); }
+  .sb.c { width: 240px; transform: translateX(-100%); }
+  .sb.c .lb { display: inline; }
+  .top-title { min-width: 0; }
+  .top-title small { display: none; }
+  .top-actions { gap: 6px; }
+  .top-actions .pill { display: none; }
+  .top-actions .btn { padding: 9px 11px; font-size: 0; }
+  .top-actions .btn::first-letter { font-size: 16px; }
+  .hero { align-items: flex-start; flex-direction: column; }
+  .metric-grid { grid-template-columns: 1fr; }
+  .domain-tools { grid-template-columns: 1fr; }
+}
+
+/* Buttons — Hover Scale & Color Shift */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--tx);
+  color: var(--bg);
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 16px rgba(38, 34, 31, 0.25);
+}
+.btn.ghost { background: var(--cream); color: var(--tx); }
+.btn.ghost:hover { background: #DDD3C1; }
+.btn.amber { background: var(--ac); color: #FFF; }
+.btn.amber:hover { background: var(--ac-dark); box-shadow: 0 6px 18px rgba(217, 119, 6, 0.35); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+/* Pills & Badges Hover */
+.pill {
+  display: inline-block;
+  background: var(--cream);
+  color: var(--tx);
+  border-radius: 99px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.pill:hover { transform: scale(1.05); background: #DCD2C0; }
+.pill.dark { background: #342E2B; color: #FDE68A; }
+.pill.dark:hover { background: #443C38; color: #FFF; }
+
+/* Action Plan Items — HOVER SLIDE & HIGHLIGHT EFFECT */
+.ti {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  background: #FFF;
+  border: 1px solid var(--bd);
+  border-radius: 14px;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.ti:hover {
+  transform: translateX(6px);
+  background: #FFF8EE;
+  border-color: var(--ac);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.12);
+}
+.ti.dn { opacity: 0.55; text-decoration: line-through; background: rgba(231, 223, 211, 0.4); }
+.ti.dn:hover { transform: translateX(4px); opacity: 0.8; }
+.ti small { margin-left: auto; color: var(--mu); font-weight: 600; }
+
+.bar { height: 10px; background: var(--cream); border-radius: 99px; overflow: hidden; margin: 8px 0; }
+.bar i { display: block; height: 100%; background: var(--ac); border-radius: 99px; transition: width 0.4s ease; }
+
+/* Quiz Options — Hover Glow */
+.opt {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #FFF;
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  padding: 11px 14px;
+  margin-top: 8px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.opt:hover {
+  background: #FFFDF9;
+  border-color: var(--ac);
+  transform: translateX(4px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+.opt.ok { background: rgba(46, 125, 50, 0.15); border-color: var(--ok); font-weight: 600; }
+.opt.no { background: rgba(185, 28, 28, 0.15); border-color: #B91C1C; }
+
+/* Onboarding Modal Overlay */
+.ov {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 25, 23, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 50;
+}
+.md {
+  background: var(--card);
+  border-radius: 24px;
+  padding: 28px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+  border: 1px solid var(--bd);
+}
+.chat-md {
+  max-width: 760px;
+  padding: 0;
+  overflow: hidden;
+  background: #171717;
+  color: #F5F5F5;
+  border: 1px solid #333;
+  box-shadow: 0 28px 80px rgba(0,0,0,.45);
+}
+.chat-head { display:flex; align-items:center; gap:12px; padding:18px 22px; border-bottom:1px solid #303030; }
+.chat-avatar { width:36px; height:36px; display:grid; place-items:center; border-radius:50%; background:linear-gradient(135deg,#2563EB,#7C3AED); font-size:18px; }
+.chat-head strong { display:block; font-size:15px; }
+.chat-head small { color:#A3A3A3; }
+.chat-close { margin-left:auto; border:0; color:#A3A3A3; background:transparent; font-size:20px; cursor:pointer; transition:color .2s, transform .2s; }
+.chat-close:hover { color:#FFF; transform:rotate(90deg); }
+.chat-body { min-height:330px; max-height:52vh; overflow:auto; padding:28px 24px 14px; }
+.chat-welcome { text-align:center; padding:8px 0 20px; }
+.chat-welcome h2 { color:#FFF; margin-bottom:8px; }
+.chat-welcome p { color:#A3A3A3; max-width:540px; margin:0 auto; }
+.chat-msg { display:flex; gap:10px; margin:14px 0; animation:chatIn .22s ease-out; }
+.chat-msg.user { justify-content:flex-end; }
+.chat-bubble { max-width:78%; padding:11px 14px; border-radius:16px 16px 16px 4px; background:#292929; color:#E5E5E5; white-space:pre-wrap; }
+.chat-msg.user .chat-bubble { border-radius:16px 16px 4px 16px; background:#2563EB; color:#FFF; }
+.chat-input-wrap { margin:8px 18px 18px; padding:8px 10px 8px 16px; display:flex; align-items:flex-end; gap:8px; border:1px solid #3A3A3A; border-radius:18px; background:#242424; transition:border-color .2s, box-shadow .2s; }
+.chat-input-wrap:focus-within { border-color:#666; box-shadow:0 0 0 3px rgba(96,165,250,.14); }
+.chat-input { flex:1; min-height:28px; max-height:100px; resize:none; margin:0; padding:5px 0; border:0; outline:0; background:transparent; color:#FFF; }
+.chat-input::placeholder { color:#999; }
+.chat-icon { width:32px; height:32px; display:grid; place-items:center; border:0; border-radius:50%; background:transparent; color:#A3A3A3; cursor:pointer; transition:background .2s, color .2s, transform .2s; }
+.chat-icon:hover { background:#3A3A3A; color:#FFF; transform:translateY(-1px); }
+.chat-send { background:#2563EB; color:#FFF; }
+.chat-send:hover { background:#3B82F6; }
+.chat-status { min-height:18px; padding:0 22px 10px; color:#A3A3A3; font-size:12px; }
+.assistant-launcher { position: fixed; right: 24px; bottom: 24px; z-index: 25; width: 56px; height: 56px; border: 0; border-radius: 50%; background: linear-gradient(135deg,#2563EB,#7C3AED); color: #FFF; font-size: 22px; cursor: pointer; box-shadow: 0 12px 28px rgba(37,99,235,.35); transition: transform .22s ease, box-shadow .22s ease; }
+.assistant-launcher:hover { transform: translateY(-4px) scale(1.04); box-shadow: 0 16px 34px rgba(37,99,235,.45); }
+.assistant-pop { position: fixed; right: 24px; bottom: 92px; z-index: 30; width: min(390px, calc(100vw - 32px)); border-radius: 20px; overflow: hidden; background: #171717; color: #F5F5F5; border: 1px solid #333; box-shadow: 0 24px 60px rgba(0,0,0,.35); animation:chatIn .2s ease-out; }
+.assistant-pop .chat-body { min-height: 180px; max-height: 42vh; padding: 18px; }
+.assistant-pop .chat-welcome { padding: 12px 0 8px; }
+.assistant-pop .chat-welcome h2 { font-size: 17px; }
+.assistant-pop .chat-welcome p { font-size: 13px; }
+.assistant-pop .chat-input-wrap { margin: 8px 12px 12px; }
+@media(max-width:560px) { .assistant-launcher { right: 16px; bottom: 16px; } .assistant-pop { right: 16px; bottom: 84px; } }
+@keyframes chatIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
+@media(max-width:560px) { .chat-body { min-height:300px; padding:22px 16px 10px; } .chat-bubble { max-width:88%; } }
+.chat-bubble.ai { white-space: normal; line-height: 1.6; }
+.chat-bubble.ai h1, .chat-bubble.ai h2, .chat-bubble.ai h3 { color:#FFF; margin:0 0 8px; }
+.chat-bubble.ai p { margin:7px 0; }
+.chat-bubble.ai ul, .chat-bubble.ai ol { margin:7px 0 7px 20px; padding:0; }
+.chat-bubble.ai li { margin:4px 0; }
+.chat-bubble.ai code { background:#111827; color:#E5E7EB; padding:2px 5px; border-radius:5px; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:.92em; }
+.chat-code { position:relative; margin:10px 0; padding:14px; border-radius:10px; background:#0B1020; border:1px solid #29334D; overflow:auto; }
+.chat-code pre { margin:0; white-space:pre; color:#E5E7EB; font:13px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace; }
+.chat-copy { position:absolute; top:7px; right:7px; border:1px solid #475569; border-radius:7px; padding:4px 8px; background:#111827; color:#CBD5E1; cursor:pointer; font-size:11px; }
+.chat-copy:hover { background:#1F2937; color:#FFF; }
+.chat-typing { opacity:.75; font-style:italic; }
+.chat-bubble.user { white-space:pre-wrap; }
+
+textarea {
+  width: 100%;
+  min-height: 160px;
+  border: 1px solid var(--bd);
+  border-radius: 16px;
+  padding: 14px;
+  font: inherit;
+  background: #FFF;
+  color: inherit;
+  resize: vertical;
+  margin: 10px 0 14px;
+  transition: border-color 0.2s;
+}
+textarea:focus { outline: none; border-color: var(--ac); box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15); }
+.intake-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field.full { grid-column: 1 / -1; }
+.field label { color: var(--mu); font-size: 12px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
+.field input, .field select {
+  width: 100%;
+  border: 1px solid var(--bd);
+  border-radius: 11px;
+  padding: 10px 12px;
+  font: inherit;
+  color: inherit;
+  background: #FFF;
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+}
+.field input:hover, .field select:hover { border-color: var(--ac); transform: translateY(-1px); }
+.field input:focus, .field select:focus { outline: none; border-color: var(--ac); box-shadow: 0 0 0 3px rgba(217,119,6,.15); }
+.intake-note { padding: 10px 12px; border-radius: 11px; background: #FFF8EE; color: var(--mu); font-size: 13px; }
+@media(max-width: 560px) { .intake-grid { grid-template-columns: 1fr; } .field.full { grid-column: auto; } }
+
+.bd { text-align: center; }
+.bd.lk { opacity: 0.4; filter: grayscale(1); }
+.bd b { font-size: 36px; display: block; margin-bottom: 4px; }
+
+.wk { display: flex; gap: 10px; align-items: flex-end; height: 130px; margin-top: 10px; }
+.wk div { flex: 1; text-align: center; font-size: 12px; color: var(--mu); }
+.wk i { display: block; background: var(--ac); border-radius: 6px 6px 0 0; min-height: 4px; margin-bottom: 6px; transition: height 0.3s; }
+
+.st { font-size: 32px; font-weight: 800; color: var(--tx); }
+.lbl { font-size: 12px; font-weight: 700; letter-spacing: 0.5px; color: var(--mu); text-transform: uppercase; margin: 16px 0 8px; }
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1C1917;
+  color: #F5F5F4;
+  padding: 12px 24px;
+  border-radius: 99px;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  z-index: 60;
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const K = 'guruagent_v5';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const fresh = () => ({
+  p: null,
+  tasks: [], res: [], qs: [], ans: {}, act: {}, log: [], badges: [], n: 0,
+  chat: { messages: [] },
+  ui: { sb: 1, hide: 0 },
+  streak: { cur: 0, best: 0, last: 0, day: '' }
+});
+
+let S;
+try { S = JSON.parse(localStorage.getItem(K)); } catch(e){}
+S = S || fresh();
+if (!S.chat || !Array.isArray(S.chat.messages)) S.chat = { messages: [] };
+S.chat.messages = S.chat.messages.filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string').slice(-24);
+let openedThisLoad = false;
+
+const save = () => { try { localStorage.setItem(K, JSON.stringify(S)); } catch(e){} };
+const today = () => new Date().toLocaleDateString('en-CA');
+const addDays = (date, amount) => {
+  const d = new Date(date + 'T12:00:00');
+  d.setDate(d.getDate() + amount);
+  return d.toLocaleDateString('en-CA');
+};
+const done = () => S.tasks.filter(t => t.done).length;
+const pct = () => S.tasks.length ? Math.round(done() * 100 / S.tasks.length) : 0;
+const subjectMatchers = {
+  python: /\bpython\b/i, js: /javascript|\bjs\b/i, react: /\breact\b/i,
+  dsa: /\bdsa\b|data structure|algorithm/i, node: /node\.?js|\bnode\b/i,
+  html: /\bhtml\b|\bcss\b/i, maths: /\bmaths?\b|algebra|geometry|calculus|trigonometry|quadratic/i,
+  accounting: /accounting|ledger|journal|balance sheet|commerce/i
+};
+const detectSubject = text => Object.keys(subjectMatchers).find(key => subjectMatchers[key].test(text));
+
+function carryForwardTasks() {
+  if (!S.p || !Array.isArray(S.tasks) || !S.tasks.length) return;
+  const now = today();
+  const overdue = S.tasks.filter(t => !t.done && t.due && t.due < now);
+  if (!overdue.length) return;
+  let current = S.tasks.find(t => !t.done && t.due === now);
+  if (!current) {
+    current = {
+      title: 'Today: ' + (S.p.goal || 'Study plan'),
+      type: 'quiz',
+      target: 3,
+      pr: 0,
+      done: 0,
+      due: now,
+      carry: []
+    };
+    S.tasks.push(current);
+  }
+  current.carry = [...new Set([...(current.carry || []), ...overdue.map(t => t.title)])];
+  current.title = 'Today + catch-up: ' + current.carry.join(' + ');
+  S.tasks = S.tasks.filter(t => !overdue.includes(t));
+  log('Carried unfinished study tasks into today');
+  save();
+}
+const domainKey = () => {
+  const text = [S.p?.stream, S.p?.education, S.p?.syllabus, S.p?.goal].join(' ').toLowerCase();
+  if (/account|finance|commerce|tally|audit|tax|economics/.test(text)) return 'accounting';
+  if (/rural|agri|farm|village|horticulture|dairy|fisher/.test(text)) return 'rural';
+  if (/computer|technical|bca|b\.?tech|coding|software|python|programming|javascript|\bit\b|information technology|engineering|developer|science/.test(text)) return 'tech';
+  return 'general';
+};
+
+const domainInfo = () => ({
+  tech: { label: 'TECH COMMAND CENTER', title: 'Build your technical edge', sub: 'Coding practice, system thinking and project progress in one place.', icon: '💻' },
+  accounting: { label: 'FINANCE COMMAND CENTER', title: 'Keep your numbers in control', sub: 'Practice accounting concepts and use quick finance tools while you learn.', icon: '📈' },
+  rural: { label: 'FIELD LEARNING CENTER', title: 'Learn for real-world impact', sub: 'Subject practice, field planning and practical knowledge for your path.', icon: '🌱' },
+  general: { label: 'LEARNING COMMAND CENTER', title: 'Make steady progress', sub: 'Your personalized learning plan, resources and practice in one place.', icon: '✨' }
+}[domainKey()]);
+
+const log = m => {
+  S.log.unshift({ t: Date.now(), m });
+  S.log.length = Math.min(S.log.length, 30);
+};
+
+function toast(m) {
+  const e = document.createElement('div');
+  e.className = 'toast';
+  e.textContent = m;
+  document.body.appendChild(e);
+  setTimeout(() => e.remove(), 2600);
+}
+
+function calculateProfit() {
+  const revenue = Number($('#revenue')?.value || 0);
+  const cost = Number($('#cost')?.value || 0);
+  const result = $('#calc-result');
+  if (result) result.textContent = 'Profit: ₹' + (revenue - cost).toLocaleString('en-IN');
+}
+
+function domainTools() {
+  const key = domainKey();
+  if (key === 'tech') return `<div class="domain-tools"><div class="domain-tool"><h3>⌘ Code Lab</h3><p>Jump into technical practice and solve your next question.</p><a class="section-action" href="#/practice">Open coding practice →</a></div><div class="domain-tool"><h3>🧩 Project Sprint</h3><p>Turn your syllabus topics into small portfolio projects.</p><a class="section-action" href="#/tasks">View build tasks →</a></div><div class="domain-tool"><h3>⚡ Stack Focus</h3><p>${esc((S.p.skills || []).join(' · ') || 'Programming fundamentals')}</p><a class="section-action" href="#/resources">Explore tech resources →</a></div></div>`;
+  if (key === 'accounting') return `<div class="domain-tools"><div class="domain-tool"><h3>🧮 Profit Calculator</h3><p>Quickly calculate revenue minus cost.</p><div class="tool-row"><input id="revenue" type="number" placeholder="Revenue"><input id="cost" type="number" placeholder="Cost"></div><button class="section-action" data-act="calculate">Calculate <span id="calc-result">Profit</span></button></div><div class="domain-tool"><h3>📚 Ledger Practice</h3><p>Revise journal entries, balance sheet and taxation.</p><a class="section-action" href="#/practice">Start finance quiz →</a></div><div class="domain-tool"><h3>💼 Finance Resources</h3><p>Keep your commerce syllabus organized and exam-ready.</p><a class="section-action" href="#/resources">Open accounting library →</a></div></div>`;
+  if (key === 'rural') return `<div class="domain-tools"><div class="domain-tool"><h3>🌾 Field Planner</h3><p>Organize practical topics, seasons and field notes.</p><a class="section-action" href="#/tasks">Open field plan →</a></div><div class="domain-tool"><h3>☀️ Practical Learning</h3><p>Focus on applied concepts from your syllabus.</p><a class="section-action" href="#/resources">View practical guides →</a></div><div class="domain-tool"><h3>📝 Revision Check</h3><p>Test your understanding with short topic quizzes.</p><a class="section-action" href="#/practice">Take revision quiz →</a></div></div>`;
+  return `<div class="domain-tools"><div class="domain-tool"><h3>🎯 Goal Focus</h3><p>Keep your personalized goal visible and actionable.</p><a class="section-action" href="#/tasks">Open my plan →</a></div><div class="domain-tool"><h3>📖 Study Library</h3><p>Review the resources generated from your profile.</p><a class="section-action" href="#/resources">Browse library →</a></div><div class="domain-tool"><h3>🧠 Practice Check</h3><p>Build confidence with a quick knowledge drill.</p><a class="section-action" href="#/practice">Start practice →</a></div></div>`;
+}
+
+if (S.p) {
+  if (S.streak.last && Date.now() - S.streak.last > 864e5) {
+    S.streak.cur = 0;
+    S.streak.day = '';
+  }
+  S.streak.last = Date.now();
+  save();
+}
+carryForwardTasks();
+
+const B = [
+  ['first', '🌱', 'First Step', 'Complete your first task', () => done() > 0],
+  ['s3', '🔥', '3-Day Streak', 'Reach a 3-day streak', () => S.streak.best >= 3],
+  ['s7', '🛡️', 'Streak Saver', 'Reach a 7-day streak', () => S.streak.best >= 7],
+  ['q5', '🧠', 'Quiz Starter', 'Answer 5 questions', () => Object.keys(S.ans).length >= 5],
+  ['half', '⭐', 'Halfway There', 'Reach 50% progress', () => pct() >= 50],
+  ['all', '🏆', 'Goal Crusher', 'Finish every task', () => S.tasks.length > 0 && pct() === 100]
+];
+
+function chk() {
+  B.forEach(b => {
+    if (!S.badges.includes(b[0]) && b[4]()) {
+      S.badges.push(b[0]);
+      log('Badge unlocked: ' + b[2]);
+      setTimeout(() => toast('🏅 New badge: ' + b[2]), 500);
+    }
+  });
+}
+
+function fin(t) {
+  t.done = 1;
+  log('Completed: ' + t.title);
+  toast('✓ Task completed automatically!');
+}
+
+function ev(type, id) {
+  const d = today();
+  const a = S.act[d] = S.act[d] || { n: 0, s: 0 };
+  a.n++;
+  if (type === 'read') {
+    const t = S.tasks.find(t => t.type === 'read' && t.res === id && !t.done);
+    if (t) fin(t);
+  } else {
+    const t = S.tasks.find(t => t.type === 'quiz' && !t.done);
+    if (t && ++t.pr >= t.target) fin(t);
+  }
+  const s = S.streak;
+  s.last = Date.now();
+  if (s.day !== d) {
+    s.day = d;
+    s.cur++;
+    s.best = Math.max(s.best, s.cur);
+  }
+  chk();
+  save();
+  render();
+}
+
+const Q = {
+  js: [['What does === check in JavaScript?', ['Value only', 'Value and type', 'Type only', 'Reference only'], 1], ['What is a closure?', ['A function remembering outer scope', 'A loop', 'A class', 'A module'], 0]],
+  react: [['Which hook manages local state?', ['useState', 'useRoute', 'useFetch', 'useStyle'], 0], ['What are props?', ['Inputs passed to a component', 'Global state', 'CSS rules', 'Routes'], 0]],
+  python: [['Which type is mutable?', ['tuple', 'str', 'list', 'int'], 2], ['What does len([1,2,3]) return?', ['2', '3', '4', 'Error'], 1]],
+  dsa: [['Time complexity of binary search?', ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'], 1], ['Which structure is LIFO?', ['Queue', 'Stack', 'Heap', 'Graph'], 1]],
+  node: [['Node.js runs JavaScript on…', ['The server', 'Only browser', 'The GPU', 'A database'], 0], ['Which command installs a package?', ['npm install', 'node get', 'npm build', 'pkg add'], 0]],
+  html: [['Which tag defines main page heading?', ['<h1>', '<head>', '<title>', '<p>'], 0], ['Flexbox is mainly for…', ['1-D layout', 'Databases', 'Servers', 'Encryption'], 0]],
+  gen: [['Best way to retain what you learn?', ['Active practice', 'Only re-reading', 'Skipping revision', 'Cramming once'], 0], ['A good study habit is…', ['Small daily sessions', 'One marathon a month', 'No breaks ever', 'Random topics'], 0]]
+};
+
+function local(data) {
+  const t = [data.name, data.education, data.stream, data.year, data.syllabus, data.goal, data.weak, data.extra].filter(Boolean).join(' ');
+  const T = { js: ['JavaScript', /javascript|\bjs\b/i], react: ['React', /\breact\b/i], python: ['Python', /\bpython\b/i], dsa: ['DSA', /\bdsa\b|data structure|algorithm/i], node: ['Node.js', /node\.?js|\bnode\b|backend/i], html: ['HTML & CSS', /\bhtml\b|\bcss\b|frontend/i], maths: ['Mathematics', /\bmaths?\b|algebra|geometry|calculus|trigonometry|quadratic/i], accounting: ['Accounting', /accounting|ledger|journal|balance sheet|commerce/i] };
+  let k = Object.keys(T).filter(x => T[x][1].test(t)).slice(0, 3);
+  if (data.urgent) {
+    const urgentKey = Object.keys(T).find(x => T[x][1].test(data.urgent)) || 'gen';
+    k = [urgentKey];
+  }
+  const technical = /bca|b\.?tech|bsc|computer|\bit\b|information technology|engineering|technical|coding|developer/i.test(t);
+  if (technical) k = [...new Set(['js', 'python', 'dsa', 'node', 'html', ...k])].slice(0, 5);
+  if (!k.length) k = ['gen'];
+  const nm = x => x === 'gen' ? 'Core Skills' : T[x][0];
+  const resources = [], tasks = [], questions = [];
+  k.forEach(x => {
+    const n = nm(x);
+    resources.push(
+      { title: n + ' Fundamentals', desc: 'Core concepts of ' + n + ', step by step.', tag: 'Guide', notes: ['Start with core ideas.', 'Type out small examples.', 'Test your understanding.'] },
+      { title: n + ' in Practice', desc: 'Hands-on exercises to lock in ' + n + '.', tag: 'Practice', notes: ['Pick a mini-project.', 'Break into 3 small steps.', 'Revisit mistakes.'] }
+    );
+    tasks.push(
+      { title: 'Read: ' + n + ' Fundamentals', type: 'read', res: resources.length - 2 },
+      { title: 'Read: ' + n + ' in Practice', type: 'read', res: resources.length - 1 }
+    );
+    (Q[x] || Q.gen).forEach(q => questions.push({ q: q[0], opts: q[1], a: q[2] }));
+  });
+  if (data.urgent) {
+    const subject = nm(k[0]);
+    return {
+      name: data.name || 'Learner',
+      education: data.education || 'Urgent exam preparation',
+      stream: subject,
+      year: data.year || 'Tomorrow',
+      syllabus: subject + ' paper',
+      goal: subject + ' exam preparation',
+      level: data.level || 'Beginner',
+      skills: [subject],
+      weak: [data.urgent],
+      daily: data.daily || 'Focused study',
+      duration: '1 day',
+      urgent: data.urgent,
+      tasks: [
+        { title: 'Revise: ' + subject + ' core concepts', type: 'read', res: 0 },
+        { title: 'Practice: ' + subject + ' important questions', type: 'quiz', target: 5 },
+        { title: 'Final revision: formulas, definitions and mistakes', type: 'read', res: 1 }
+      ],
+      resources,
+      questions
+    };
+  }
+  if (data.focusText) {
+    const subject = nm(k[0]);
+    const topic = data.focusText.replace(/(?:my|mera|mujhe|i have|i want|please|help me|paper|exam|test|hai|h|is|for|ke|ka|ki)/gi, ' ').replace(/\s+/g, ' ').trim();
+    return {
+      name: data.name || 'Learner', education: data.education || 'Focused preparation',
+      stream: subject, year: data.year || 'Focused topic', syllabus: data.focusText,
+      goal: subject + ' — ' + (topic || 'selected topic'), level: data.level || 'Beginner',
+      skills: [subject], weak: [data.focusText], daily: data.daily || 'Focused study',
+      duration: data.urgent ? '1 day' : 'Focused topic', focusText: data.focusText,
+      tasks: [
+        { title: 'Understand: ' + (topic || subject + ' topic'), type: 'read', res: 0 },
+        { title: 'Practice questions: ' + (topic || subject), type: 'quiz', target: 5 },
+        { title: 'Revise mistakes: ' + (topic || subject), type: 'read', res: 1 }
+      ], resources, questions
+    };
+  }
+  if (data.syllabus) {
+    data.syllabus.split(/[,;\n]+/).map(x => x.trim()).filter(x => x.length > 2).slice(0, 5).forEach(subject => {
+      resources.push({ title: subject + ' Study Guide', desc: 'A focused study path for ' + subject + ' based on your ' + (data.year || 'current') + ' syllabus.', tag: 'Subject', notes: ['Read the chapter summary.', 'Practice important questions.', 'Revise before your next test.'] });
+      tasks.push({ title: 'Study: ' + subject + ' — ' + (data.goal || 'exam preparation'), type: 'read', res: resources.length - 1 });
+      tasks.push({ title: 'Practice: ' + subject + ' important questions', type: 'quiz', target: 3 });
+    });
+  }
+  if (data.syllabus) {
+    resources.push({ title: 'Your Syllabus Roadmap', desc: 'A personalized sequence built from your syllabus: ' + data.syllabus, tag: 'Your syllabus', notes: ['Start with the first unit.', 'Make short notes after each topic.', 'Revise weak areas with practice.'] });
+    tasks.unshift({ title: 'Review: Your syllabus roadmap', type: 'read', res: resources.length - 1 });
+  }
+  tasks.push({ title: 'Answer 3 practice questions', type: 'quiz', target: 3 }, { title: 'Answer 3 more practice questions', type: 'quiz', target: 3 });
+  return { name: data.name, education: data.education, stream: data.stream, year: data.year, syllabus: data.syllabus, goal: data.goal, level: data.level, skills: k.map(nm), weak: data.weak ? [data.weak] : [], daily: data.daily + ' hrs/day', duration: data.duration, tasks, resources, questions };
+}
+
+function inferInput(text, current) {
+  const subject = detectSubject(text);
+  const urgent = /kal|tomorrow|urgent|exam|paper|test|aaj|today|parso/i.test(text);
+  const name = text.match(/(?:my name is|i am|mera naam|main|mai)\s+([a-z][a-z .'-]{1,30}?)(?=\s+(?:hu|hoon|hun|h|hai|aur|and|mera|meri|mujhe|ke|ki|ka)\b|[,.;]|$)/i);
+  const hours = text.match(/(\d+(?:\.\d+)?)\s*(?:hours?|hrs?)/i);
+  return {
+    ...current,
+    name: name ? name[1].trim() : current.name,
+    stream: subject || current.stream || '',
+    syllabus: text,
+    goal: subject ? subject + (urgent ? ' exam preparation' : ' preparation') : text,
+    weak: text,
+    daily: hours ? hours[1] : current.daily || 'Focused study',
+    duration: urgent ? '1 day' : current.duration || 'Focused topic',
+    urgent: urgent ? text : '',
+    focusText: subject ? text : ''
+  };
+}
+
+function apply(o, text, upd) {
+  if (!upd) { S.tasks = []; S.res = []; S.qs = []; S.ans = {}; S.log = []; S.p = {}; }
+  if (upd || o.urgent) { S.tasks = []; S.res = []; S.qs = []; S.ans = {}; }
+  const p = S.p;
+  p.text = (upd && p.text ? p.text + '\n\n' : '') + text;
+  ['name','education','stream','year','syllabus','goal','level','daily','duration'].forEach(k => { if (o[k]) p[k] = o[k]; });
+  if (o.urgent) p.urgent = o.urgent;
+  ['skills','weak'].forEach(k => {
+    if (!Array.isArray(o[k])) return;
+    p[k] = upd ? [...new Set(o[k])] : [...new Set([...(p[k] || []), ...o[k]])];
+  });
+  const ids = o.resources.map(r => {
+    const id = 'r' + (++S.n);
+    S.res.push({ id, title: String(r.title), desc: String(r.desc || ''), tag: r.tag || '', notes: Array.isArray(r.notes) ? r.notes : [] });
+    return id;
+  });
+  o.tasks.forEach((t, i) => {
+    if (S.tasks.some(x => x.title === t.title)) return;
+    const rd = t.type !== 'quiz' && ids.length;
+    S.tasks.push({ title: String(t.title), type: rd ? 'read' : 'quiz', res: rd ? ids[t.res] || ids[i % ids.length] : 0, target: t.target || 3, pr: 0, done: 0, due: addDays(today(), S.tasks.length) });
+  });
+  S.tasks.forEach((t, i) => { if (!t.due) t.due = addDays(today(), i); });
+  o.questions.filter(q => q && Array.isArray(q.opts) && q.opts.length > 1 && q.opts[q.a] != null).forEach(q => S.qs.push({ q: String(q.q), o: q.opts, a: q.a }));
+  if (!S.qs.length) Q.gen.forEach(q => S.qs.push({ q: q[0], o: q[1], a: q[2] }));
+}
+
+function chatHistory() {
+  return (S.chat?.messages || []).slice(-18);
+}
+
+function formatInline(text) {
+  return esc(text)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+}
+
+function formatAi(raw) {
+  const text = String(raw || '').replace(/\r/g, '');
+  const parts = text.split(/```([\w#+.-]*)\n?([\s\S]*?)```/g);
+  let html = '';
+  for (let i = 0; i < parts.length; i += 3) {
+    const prose = parts[i] || '';
+    if (prose) {
+      const lines = prose.split('\n');
+      let list = null;
+      for (const line of lines) {
+        const t = line.trim();
+        if (!t) { if (list) { html += `</${list}>`; list = null; } continue; }
+        const h = t.match(/^###\s+(.+)$/) || t.match(/^##\s+(.+)$/) || t.match(/^#\s+(.+)$/);
+        if (h) { if (list) { html += `</${list}>`; list = null; } html += `<h3>${formatInline(h[1])}</h3>`; continue; }
+        const li = t.match(/^[-*]\s+(.+)$/) || t.match(/^\d+[.)]\s+(.+)$/);
+        if (li) { const ordered = /^\d+[.)]/.test(t); const tag = ordered ? 'ol' : 'ul'; if (list !== tag) { if (list) html += `</${list}>`; html += `<${tag}>`; list = tag; } html += `<li>${formatInline(li[1])}</li>`; continue; }
+        if (list) { html += `</${list}>`; list = null; }
+        html += `<p>${formatInline(t)}</p>`;
+      }
+      if (list) html += `</${list}>`;
+    }
+    if (i + 1 < parts.length) {
+      const lang = parts[i + 1] || '';
+      const code = parts[i + 2] || '';
+      const safe = esc(code.trimEnd());
+      html += `<div class="chat-code"><button class="chat-copy" type="button" data-copy="${esc(code.trimEnd())}">Copy</button><pre>${safe}</pre></div>`;
+    }
+  }
+  return html || '<p>Sorry, I could not generate a response.</p>';
+}
+
+async function askLocalAi(text, currentAlreadyStored = false) {
+  const profile = S.p || {};
+  const system = [
+    'You are GuruAgent, a capable general-purpose AI tutor and study assistant.',
+    'Answer the user directly and completely. Do not make the user ask for missing basics unless a clarification is genuinely required.',
+    'You can help across mathematics, physics, chemistry, biology, computer science, Python, JavaScript, HTML/CSS, React, Node.js, DSA, databases, accounting, commerce, English, writing, study skills and general educational questions.',
+    'For broad concept questions, cover: what it is, what it is not when useful, how it works, key parts, a simple example, common mistakes, and related concepts when relevant. Keep simple questions reasonably concise.',
+    'For maths, identify what is given, choose the formula or method, solve step by step, show the calculation, and clearly state the final answer. If the user has not supplied the actual question, explain how to approach it and ask them to send the sum/photo/text.',
+    'For programming, give correct syntax and runnable examples when appropriate, explain the code, and mention important edge cases or common mistakes.',
+    'Use the student profile as context, especially for exam urgency and subject level, but never let it stop you from answering an unrelated question.',
+    'Remember and use the conversation history. Understand follow-ups such as "isme", "ye", "next", and "example" from context.',
+    'Do not invent current/live information. Do not claim to browse, access files, see images, or perform actions unless that capability is actually provided in the conversation.',
+    'Use clean Markdown. Prefer headings, bullets, formulas and fenced code blocks when they improve clarity.',
+    'Student profile: ' + JSON.stringify({ name: profile.name || '', education: profile.education || '', stream: profile.stream || '', year: profile.year || '', syllabus: profile.syllabus || '', goal: profile.goal || '', level: profile.level || '', weak: profile.weak || [], urgent: profile.urgent || '' })
+  ].join('\n');
+  const history = currentAlreadyStored ? chatHistory().slice(0, -1) : chatHistory();
+  const messages = [{ role: 'system', content: system }, ...history, { role: 'user', content: text }];
+  let response;
+  try {
+    response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages })
+    });
+  } catch (error) {
+    throw new Error('AI service is not reachable. Please check the deployed /api/chat function.', { cause: error });
+  }
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.error || `AI service returned HTTP ${response.status}`);
+  if (!payload.reply) throw new Error('AI service returned no message');
+  return String(payload.reply).trim();
+}
+
+
+
+function buildFocused(text) {
+  const current = S.p || {};
+  const inferred = inferInput(text, {
+    name: current.name || '',
+    education: current.education || '',
+    stream: current.stream || '',
+    year: current.year || '',
+    syllabus: current.syllabus || '',
+    goal: current.goal || '',
+    weak: current.weak || '',
+    level: current.level || 'Beginner',
+    daily: current.daily || '',
+    duration: current.duration || ''
+  });
+
+  const subject = detectSubject(text);
+  if (subject) inferred.stream = subject;
+  if (!inferred.name) {
+    const m = text.match(/(?:main|mai|mera naam|my name is|i am)\s+([a-z][a-z .'-]{1,30}?)(?:\s+(?:hu|hoon|hun|h|and|aur|hai)\b|\s*,|\s+mera\b)/i);
+    if (m) inferred.name = m[1].trim();
+  }
+  if (!inferred.education) inferred.education = current.education || 'Student';
+  if (!inferred.year) inferred.year = /kal|tomorrow|aaj|today|exam|paper|test/i.test(text) ? 'Exam preparation' : 'Current study';
+  if (!inferred.syllabus) inferred.syllabus = text;
+  if (!inferred.goal) inferred.goal = subject ? `${subject} focused preparation` : text;
+  if (!inferred.weak) inferred.weak = text;
+  if (!inferred.daily) inferred.daily = 'Focused study';
+  if (!inferred.duration) inferred.duration = inferred.urgent ? '1 day' : 'Focused topic';
+  if (!inferred.focusText) inferred.focusText = text;
+  if (!inferred.urgent && /kal|tomorrow|urgent|exam|paper|test|aaj|today|parso/i.test(text)) inferred.urgent = text;
+
+  const o = local(inferred);
+  apply(o, text, !!S.p);
+  S.p = S.p || {};
+  S.p.focusText = text;
+  S.p.urgent = inferred.urgent || S.p.urgent || '';
+  S.streak.last = Date.now();
+  log('Created focused study plan from chat');
+  save();
+  $('#modal').innerHTML = '';
+  location.hash = '#/dashboard';
+  chk();
+  render();
+  toast('✓ Focused study plan created');
+}
+
+function ask(upd, floating) {
+  const p = S.p || {};
+  const saved = {
+    name: p.name || '', education: p.education || '', stream: p.stream || '', year: p.year || '',
+    syllabus: p.syllabus || '', goal: p.goal || '', weak: (p.weak || []).join(', '),
+    level: p.level || 'Beginner', daily: (p.daily || '').replace(' hrs/day', ''), duration: p.duration || ''
+  };
+  const data = upd ? { name:'', education:'', stream:'', year:'', syllabus:'', goal:'', weak:'', level:saved.level, daily:'', duration:'' } : saved;
+  const fields = [
+    ['name', 'What should I call you?'],
+    ['education', 'What are you studying or which class are you in?'],
+    ['stream', 'Which stream or field are you from? For example Computer Science, Accounting or Agriculture.'],
+    ['year', 'Which year, class or semester are you currently in?'],
+    ['syllabus', 'Tell me your syllabus or the subjects you want to study.'],
+    ['goal', 'What do you want to achieve with this dashboard?'],
+    ['weak', 'Which topics are difficult, and how should I help you?'],
+    ['daily', 'How many hours can you study daily?'],
+    ['duration', 'In how much time do you want to reach this goal?']
+  ];
+  let index = fields.findIndex(f => !data[f[0]]); if (index < 0) index = 0;
+  const messages = [];
+  const addMessage = (who, text, raw=false) => {
+    const content = who === 'ai' && raw ? formatAi(text) : esc(text);
+    messages.push(`<div class="chat-msg ${who}"><div class="chat-bubble ${who === 'ai' ? 'ai' : 'user'}">${content}</div></div>`);
+  };
+  const renderHistory = () => {
+    const history = (S.chat?.messages || []).map(m => `<div class="chat-msg ${m.role === 'user' ? 'user' : 'ai'}"><div class="chat-bubble ${m.role === 'user' ? 'user' : 'ai'}">${m.role === 'assistant' ? formatAi(m.content) : esc(m.content)}</div></div>`).join('');
+    return history || '<div class="chat-welcome"><h2>What can I help you with?</h2><p>Ask me maths, coding, science, exam questions, concepts, examples, or anything you are learning.</p></div>';
+  };
+  const isAssistant = !!floating && !!S.p;
+  $('#modal').innerHTML = `<div class="${floating ? 'assistant-pop' : 'ov'}"><div class="md chat-md">
+    <div class="chat-head"><div class="chat-avatar">✦</div><div><strong>GuruAgent</strong><small>Personal learning assistant</small></div><button class="chat-close" data-act="chat-close" aria-label="Close">×</button></div>
+    <div class="chat-body" id="chat-body">${isAssistant ? renderHistory() : ''}</div>
+    <div class="chat-status" id="chat-status"></div>
+    <form class="chat-input-wrap" id="chat-form"><button class="chat-icon" type="button" title="Add context">＋</button><textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask anything"></textarea><button class="chat-icon" type="button" title="Voice input">♩</button><button class="chat-icon chat-send" type="submit" title="Send">➤</button></form>
+  </div></div>`;
+  const body = $('#chat-body'), input = $('#chat-input');
+  const required = ['name','education','stream','year','syllabus','goal','weak','daily','duration'];
+  const complete = () => required.every(k => String(data[k] || '').trim());
+  const explicitPlanRequest = text => /\b(update|change|create|make|build|generate|dashboard|study plan|plan bana|plan banao)\b/i.test(text);
+  const nextQuestion = () => { index = fields.findIndex(f => !String(data[f[0]] || '').trim()); if (index >= 0) addMessage('ai', fields[index][1]); };
+
+  if (!isAssistant && !S.p) nextQuestion();
+
+  $('#chat-form').onsubmit = async e => {
+    e.preventDefault();
+    const text = input.value.trim(); if (!text) return;
+    input.value = '';
+    if (isAssistant) {
+      S.chat.messages.push({ role:'user', content:text });
+      S.chat.messages = S.chat.messages.slice(-24); save();
+      body.innerHTML = renderHistory() + '<div class="chat-msg ai"><div class="chat-bubble ai chat-typing">✦ Thinking…</div></div>';
+      body.scrollTop = body.scrollHeight;
+      $('#chat-status').textContent = '✦ GuruAgent is thinking…';
+      try {
+        const reply = await askLocalAi(text, true);
+        S.chat.messages.push({ role:'assistant', content:reply });
+        S.chat.messages = S.chat.messages.slice(-24); save();
+        body.innerHTML = renderHistory();
+      } catch (error) {
+        console.error(error);
+        const msg = String(error?.message || '');
+        const reply = /not configured|GROQ_API_KEY/i.test(msg)
+          ? 'AI backend configured nahi hai. Vercel Environment Variables me GROQ_API_KEY check karke redeploy karo.'
+          : `AI service se response nahi aa raha. ${msg || 'Vercel /api/chat deployment aur API configuration check karo.'}`;
+        body.innerHTML = renderHistory() + `<div class="chat-msg ai"><div class="chat-bubble ai">${esc(reply)}</div></div>`;
+      }
+      $('#chat-status').textContent = '';
+      body.scrollTop = body.scrollHeight;
+      return;
+    }
+
+    addMessage('user', text);
+    const updateRequest = explicitPlanRequest(text);
+    if (S.p && !updateRequest) {
+      $('#chat-status').textContent = '✦ GuruAgent is thinking…';
+      try { addMessage('ai', await askLocalAi(text), true); }
+      catch (error) { console.error(error); addMessage('ai', String(error?.message || 'AI service temporarily unavailable.')); }
+      body.innerHTML = messages.join(''); $('#chat-status').textContent = ''; body.scrollTop = body.scrollHeight; return;
+    }
+    const focusedRequest = /\b(kal|tomorrow|urgent|exam|paper|test|aaj|today|parso|study plan|plan bana|plan banao|live study plan)\b/i.test(text);
+    if (detectSubject(text) && (updateRequest || !S.p || focusedRequest)) {
+      addMessage('ai', 'Understood. I will use the details you gave me and prepare a focused dashboard.', false);
+      body.innerHTML = messages.join('');
+      setTimeout(() => buildFocused(text), 120);
+      return;
+    }
+    const key = index >= 0 ? fields[index][0] : 'extra'; if (key !== 'extra') data[key] = text;
+    if (complete()) {
+      addMessage('ai', 'I have understood your profile, syllabus and goal. I am preparing your custom dashboard now…');
+      body.innerHTML = '<div class="chat-welcome"><h2>Building your dashboard…</h2><p>Understanding your stream, subjects and study needs.</p></div>' + messages.join('');
+      $('#chat-status').textContent = '✦ Personalizing your learning workspace…';
+      setTimeout(() => { const o=local(data); apply(o,Object.values(data).join(' | '),upd); S.streak.last=Date.now(); $('#modal').innerHTML=''; location.hash='#/dashboard'; chk(); save(); render(); }, 650); return;
+    }
+    nextQuestion(); body.innerHTML = '<div class="chat-welcome"><h2>Let’s build your learning workspace</h2><p>Tell me the next detail.</p></div>' + messages.join(''); body.scrollTop=body.scrollHeight;
+  };
+  input.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#chat-form').requestSubmit(); } };
+  body.addEventListener('click', e => { const b=e.target.closest('[data-copy]'); if (!b) return; navigator.clipboard?.writeText(b.getAttribute('data-copy') || '').then(()=>{b.textContent='Copied'; setTimeout(()=>b.textContent='Copy',1200);}).catch(()=>{}); });
+  input.focus();
+}
+
+
+let rt;
+function reader(id) {
+  const r = S.res.find(x => x.id === id);
+  if (!r) return;
+  const t = S.tasks.find(t => t.type === 'read' && t.res === id);
+  const dn = t && t.done;
+  let s = 0;
+  $('#modal').innerHTML = `<div class="ov"><div class="md"><span class="pill">${esc(r.tag || 'Guide')}</span><h2 style="margin-top:10px">${esc(r.title)}</h2><p class="mu">${esc(r.desc)}</p><ul>${r.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul><div class="bar"><i id="rb" style="width:${dn ? 100 : 0}%"></i></div><p class="mu" id="rs">${dn ? '✓ Completed' : 'Reading… progress tracked automatically'}</p><button class="btn ghost" data-act="close">Close</button></div></div>`;
+  clearInterval(rt);
+  if (dn) return;
+  rt = setInterval(() => {
+    if (document.hidden) return;
+    s++;
+    const a = S.act[today()] = S.act[today()] || { n: 0, s: 0 };
+    a.s++;
+    if ($('#rb')) $('#rb').style.width = (s * 100 / 8) + '%';
+    if (s >= 8) {
+      clearInterval(rt);
+      if ($('#rs')) $('#rs').textContent = '✓ Completed! Action plan updated.';
+      ev('read', id);
+    }
+  }, 1000);
+}
+
+const ti = t => `<div class="ti ${t.done ? 'dn' : ''}" data-go="${t.type === 'read' ? 'res:' + t.res : '#/practice'}"><span>${t.done ? '✓' : '○'}</span><span style="font-weight:600">${esc(t.title)}${t.carry && t.carry.length ? '<br><small style="font-weight:500">Merged catch-up task</small>' : ''}</span>${t.due ? `<small>${t.due === today() ? 'Today' : new Date(t.due + 'T12:00:00').toLocaleDateString('en', { month: 'short', day: 'numeric' })}${t.type === 'quiz' && !t.done ? ' · ' + t.pr + '/' + t.target : ''}</small>` : ''}</div>`;
+
+const plan = max => {
+  const P = S.tasks.filter(t => !t.done);
+  const D = S.ui.hide ? [] : S.tasks.filter(t => t.done);
+  return `<div class="lbl">Personalized Study Plan · ${esc(S.p.goal || 'Your goal')}</div><p class="mu" style="font-size:13px">Tasks are generated from your ${esc(S.p.year || 'current')} syllabus and carried forward when unfinished.</p><div class="lbl">Pending Tasks (Top Priority)</div>${(max ? P.slice(0, max) : P).map(ti).join('') || '<p class="mu">🎉 All tasks done!</p>'}${D.length ? '<div class="lbl">Completed Tasks (Bottom)</div>' + (max ? D.slice(0, Math.max(2, max - P.length)) : D).map(ti).join('') : ''}`;
+};
+
+const qc = i => {
+  const q = S.qs[i], a = S.ans[i];
+  return `<div style="margin:14px 0"><b>Q${i + 1}. ${esc(q.q)}</b>${q.o.map((o, j) => `<button class="opt ${a == null ? '' : j === q.a ? 'ok' : j === a ? 'no' : ''}" data-a="${i}:${j}">${esc(o)}</button>`).join('')}</div>`;
+};
+
+const rc = (r, o) => {
+  const t = S.tasks.find(t => t.type === 'read' && t.res === r.id);
+  return `<div class="card ${o ? 'k' : ''}" ${o ? `data-go="res:${r.id}"` : ''} style="margin:0"><span class="pill">${esc(r.tag || 'Guide')}</span><h3 style="margin-top:10px">${esc(r.title)}</h3><p class="mu">${esc(r.desc)}</p><b>${t && t.done ? '✓ Completed' : 'Open Resource →'}</b></div>`;
+};
+
+const bg = all => B.filter(b => all || S.badges.includes(b[0])).map(b => {
+  const u = S.badges.includes(b[0]);
+  return `<div class="card bd ${u ? '' : 'lk'}" style="margin:0"><b>${b[1]}</b><h3>${b[2]}</h3><span class="mu">${b[3]}</span></div>`;
+}).join('') || '<p class="mu">No badges unlocked yet.</p>';
+
+const V = {
+  dashboard() {
+    const h = new Date().getHours();
+    const g = h < 12 ? 'Morning' : h < 17 ? 'Afternoon' : 'Evening';
+    const n = S.p.name;
+    const d = domainInfo();
+    return `
+      <section class="hero">
+        <div><p class="lbl" style="color:#FCD34D; margin:0 0 6px;">${d.icon} ${d.label}</p><h1>${d.title}</h1><p>Good ${g}${n ? ', ' + esc(n) : ''}. ${d.sub}</p></div>
+        <button class="btn" data-act="update">✦ Refresh my plan</button>
+      </section>
+      ${domainTools()}
+      <div class="metric-grid">
+        <div class="metric"><span>Tasks left</span><strong>${Math.max(0, S.tasks.length - done())}</strong></div>
+        <div class="metric"><span>Questions solved</span><strong>${Object.keys(S.ans).length}</strong></div>
+        <div class="metric"><span>Study time</span><strong>${Math.round(Object.values(S.act).reduce((sum, a) => sum + a.s, 0) / 60)}m</strong></div>
+      </div>
+
+      <div class="card k" data-go="#/achievements" style="margin-top:16px; background: linear-gradient(135deg, #FAF8F5 0%, #E7DFD3 100%); border-color:#DDD5C7;">
+        <h3>🏆 YOUR ACHIEVEMENTS</h3>
+        <div style="display:flex; gap:36px; flex-wrap:wrap; margin: 12px 0;">
+          <div><span class="st">🔥 ${S.streak.cur}</span><div class="mu">Day Streak</div></div>
+          <div><span class="st">⭐ ${pct()}%</span><div class="mu">Completed</div></div>
+          <div><span class="st">🏅 ${S.badges.length}</span><div class="mu">Badges</div></div>
+        </div>
+        <p class="mu" style="margin:0; font-weight:600;">Track your milestones and keep your momentum going.</p>
+        <a class="section-action amber" href="#/achievements">View Achievements & Streak Badges →</a>
+      </div>
+
+      <div class="g2">
+        <div class="card">
+          <h3>ACTION PLAN</h3>
+          ${plan(6)}
+          <a class="section-action" href="#/tasks">See all tasks in detail →</a>
+        </div>
+        <div class="card k" data-go="#/progress">
+          <h3>DAILY PROGRESS</h3>
+          <div class="st" style="font-size:48px; color:var(--ac);">${pct()}%</div>
+          <div class="bar"><i style="width:${pct()}%"></i></div>
+          <p style="font-weight:600">${done()} / ${S.tasks.length} tasks completed</p>
+          <p class="mu">Your daily momentum at a glance.</p>
+          <a class="section-action" href="#/progress">View Full Detailed Progress →</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🧠 KNOWLEDGE DRILL</h3>
+        ${S.qs.slice(0, 2).map((q, i) => qc(i)).join('')}
+        <div style="margin-top:18px; padding-top:12px; border-top:1px solid var(--bd); display:flex; justify-content:space-between; align-items:center;">
+          <span class="mu">Want to solve more questions?</span>
+          <a class="section-action amber" href="#/practice">Go to Practice Page →</a>
+        </div>
+      </div>
+
+      <div class="card k" data-go="#/resources">
+        <h3>📚 RECOMMENDED FOR YOU</h3>
+        <div class="g3" style="margin-top:12px">${S.res.slice(0, 3).map(r => rc(r, 0)).join('')}</div>
+        <a class="section-action" href="#/resources">Open full Resource Library →</a>
+      </div>
+    `;
+  },
+  progress() {
+    const tm = Math.round(Object.values(S.act).reduce((s, a) => s + a.s, 0) / 60);
+    const days = [...Array(7)].map((_, i) => {
+      const d = new Date(Date.now() - (6 - i) * 864e5);
+      return [d.toLocaleDateString('en-CA'), d.toLocaleDateString('en', { weekday: 'short' })];
+    });
+    const cnt = d => (S.act[d] || { n: 0 }).n;
+    const mx = Math.max(1, ...days.map(d => cnt(d[0])));
+    return `
+      <h1>Progress Deep Dive</h1>
+      <div class="g3">${[['Total Tasks', S.tasks.length], ['Completed', done()], ['Pending', S.tasks.length - done()], ['Active Time', tm + ' min'], ['Current Streak', '🔥 ' + S.streak.cur], ['Best Streak', S.streak.best + ' days']].map(x => `<div class="card" style="margin:0"><div class="mu">${x[0]}</div><div class="st">${x[1]}</div></div>`).join('')}</div>
+      <div class="card" style="margin-top:20px"><h3>Overall Goal Progress: ${pct()}%</h3><div class="bar"><i style="width:${pct()}%"></i></div></div>
+      <div class="card"><h3>Weekly Activity Tracker</h3><div class="wk">${days.map(d => `<div><i style="height:${cnt(d[0]) * 95 / mx}px"></i>${d[1]}</div>`).join('')}</div></div>
+      <div class="g2"><div class="card"><h3>Completed Topics</h3>${S.tasks.filter(t => t.done).map(t => `<div class="ti" style="cursor:default">✓ ${esc(t.title)}</div>`).join('') || '<p class="mu">No completed topics yet.</p>'}</div>
+      <div class="card"><h3>Goal Details</h3><p><b>${esc(S.p.goal || '—')}</b></p><p class="mu">${esc(S.p.level || '')} ${S.p.daily ? '· ' + esc(S.p.daily) : ''} ${S.p.duration ? '· ' + esc(S.p.duration) : ''}</p><h3>Activity Log</h3>${S.log.slice(0, 8).map(l => `<div class="mu" style="font-size:12px">${new Date(l.t).toLocaleTimeString()} ·${esc(l.m)}</div>`).join('') || '<p class="mu">No logs recorded.</p>'}</div></div>
+    `;
+  },
+  tasks() { return `<h1>All Action Plan Tasks</h1><div class="card"><button class="btn ghost" data-act="hide">${S.ui.hide ? 'Show' : 'Hide'} completed tasks</button>${plan()}</div>`; },
+  practice() { return `<h1>Knowledge Drill Practice</h1><p class="mu">${Object.keys(S.ans).length} of ${S.qs.length} answered.</p><div class="card">${S.qs.map((q, i) => qc(i)).join('')}</div>`; },
+  resources() { return `<h1>Resource Library</h1><div class="g3">${S.res.map(r => rc(r, 1)).join('')}</div>`; },
+  achievements() { return `<h1>Achievements & Streaks</h1><div class="card"><h3>🔥 ${S.streak.cur}-Day Current Streak</h3><p class="mu">Best Streak: ${S.streak.best} days. Keep visiting and practicing daily to retain your streak.</p></div><div class="g3">${bg(1)}</div>`; },
+  profile() {
+    const p = S.p;
+    return `
+      <h1>User Profile</h1>
+      <div class="card">
+        <div style="display:flex; gap:16px; align-items:center;">
+          <span class="pill dark" style="font-size:24px; padding:10px 18px;">${esc((p.name || 'G')[0].toUpperCase())}</span>
+          <div><h2 style="margin:0">${esc(p.name || 'Learner')}</h2><span class="mu">${esc(p.goal || '')}</span></div>
+        </div>
+        <p style="margin-top:14px"><b>Education:</b> ${esc(p.education || '—')} | <b>Stream:</b> ${esc(p.stream || '—')} | <b>Year:</b> ${esc(p.year || '—')}</p>
+        <p><b>Level:</b> ${esc(p.level || '—')} | <b>Daily Time:</b> ${esc(p.daily || '—')} | <b>Duration:</b> ${esc(p.duration || '—')}</p>
+        <p class="mu"><b>Syllabus:</b> ${esc(p.syllabus || '—')}</p>
+        <p>${[...(p.skills || []), ...(p.weak || [])].map(s => `<span class="pill">${esc(s)}</span> `).join('')}</p>
+      </div>
+      <div class="card"><h3>My Badges</h3><div class="g3">${bg(0)}</div></div>
+      <button class="btn ghost" data-act="reset" style="color:#B91C1C;">Reset All Data</button>
+    `;
+  }
+};
+
+const NAV = [
+  ['dashboard', '🏠', 'Dashboard'],
+  ['progress', '📊', 'Progress'],
+  ['tasks', '✓', 'Tasks'],
+  ['practice', '🧠', 'Practice'],
+  ['resources', '📚', 'Resources'],
+  ['achievements', '🏆', 'Achievements'],
+  ['profile', '👤', 'Profile']
+];
+
+const route = () => { const r = location.hash.slice(2); return NAV.some(n => n[0] === r) ? r : 'dashboard'; };
+
+function render() {
+  const showOnLoad = !openedThisLoad;
+  openedThisLoad = true;
+  if (!S.p) {
+    $('#app').innerHTML = '';
+    if (!$('#chat-input')) ask();
+    return;
+  }
+  const r = route();
+  $('#app').innerHTML = `
+    <aside class="sb ${S.ui.sb ? '' : 'c'}">
+      <div class="logo"><span>🎓</span><span class="lb">GuruAgent</span></div>
+      ${NAV.map(n => `<a class="nv ${r === n[0] ? 'on' : ''}" href="#/${n[0]}" title="${n[2]}"><span>${n[1]}</span><span class="lb">${n[2]}</span></a>`).join('')}
+      <div style="flex:1"></div>
+      <div class="nv" data-act="toggle"><span>${S.ui.sb ? '←' : '→'}</span><span class="lb">Collapse</span></div>
+    </aside>
+    <main class="mn domain-${domainKey()}">
+      <header class="hd">
+        <button class="btn ghost" data-act="toggle" style="background:#342E2B; color:#FFF;">☰</button>
+        <div class="top-title"><b style="font-size:18px">GuruAgent</b><small>PERSONAL LEARNING OS</small></div>
+        <div class="top-actions"><button class="btn amber" data-act="update">✦ Update My Plan</button><span class="pill dark">🔥 ${S.streak.cur} Day Streak</span><a class="pill dark" href="#/profile">👤 Profile</a></div>
+      </header>
+      <div class="pg">${V[r]()}</div>
+    </main>
+    <button class="assistant-launcher" data-act="assistant" aria-label="Open GuruAgent assistant" title="Ask GuruAgent">✦</button>
+  `;
+  if (showOnLoad && !$('#chat-input')) ask(true);
+}
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-go],[data-a],[data-act]');
+  if (!el) return;
+
+  if (el.dataset.a) {
+    const [i, j] = el.dataset.a.split(':').map(Number);
+    if (S.ans[i] == null) {
+      S.ans[i] = j;
+      log('Answered a question');
+      ev('ans');
+    }
+    return;
+  }
+  if (el.dataset.act) {
+    const a = el.dataset.act;
+    if (a === 'toggle') { S.ui.sb = S.ui.sb ? 0 : 1; save(); render(); }
+    else if (a === 'update') ask(1);
+    else if (a === 'assistant') ask(false, true);
+    else if (a === 'calculate') calculateProfit();
+    else if (a === 'chat-close' && S.p) { $('#modal').innerHTML = ''; save(); }
+    else if (a === 'hide') { S.ui.hide = S.ui.hide ? 0 : 1; save(); render(); }
+    else if (a === 'close') { clearInterval(rt); $('#modal').innerHTML = ''; save(); }
+    else if (a === 'reset' && confirm('Reset all data and start over?')) { S = fresh(); save(); location.hash = '#/dashboard'; render(); }
+    return;
+  }
+  if (e.target.closest('a')) return;
+  const g = el.dataset.go;
+  if (g.startsWith('res:')) reader(g.slice(4));
+  else location.hash = g;
+});
+
+addEventListener('hashchange', () => { render(); scrollTo(0, 0); });
+render();
+</script>
+</body>
+</html>
