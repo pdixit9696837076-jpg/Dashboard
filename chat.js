@@ -1,5 +1,6 @@
 // OPENAI-TEST-2026
 const MODEL = process.env.OPENAI_MODEL || 'gpt-5.6-luna';
+const VERSION = "OPENAI-TEST-123";
 // OpenAI production backend
 
 function cleanMessages(messages) {
@@ -19,11 +20,12 @@ function cleanMessages(messages) {
 
 async function handler(req, res) {
   if (req.method === 'GET') {
-    return res.status(200).json({
-      ok: true,
-      configured: Boolean(process.env.OPENAI_API_KEY),
-      model: MODEL
-    });
+return res.status(200).json({
+  ok: true,
+  configured: Boolean(process.env.OPENAI_API_KEY),
+  model: MODEL,
+  version: VERSION
+});
   }
 
   if (req.method !== 'POST') {
