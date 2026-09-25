@@ -1,3 +1,4 @@
+// OPENAI-TEST-2026
 const MODEL = process.env.OPENAI_MODEL || 'gpt-5.6-luna';
 // OpenAI production backend
 
